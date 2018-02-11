@@ -2,6 +2,11 @@ package org.usfirst.frc.team5015.robot;
 
 import edu.wpi.first.wpilibj.Timer;
 
+/**
+ * 
+ * A sample auto mode from 2017.
+ *
+ */
 public class Right_Peg_Auto extends Auto_Mode {
 
 	public Right_Peg_Auto(String name, SWATDrive drive, Timer timer) {
