@@ -5,6 +5,7 @@ import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.CameraServer;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -31,10 +32,11 @@ public class Robot extends IterativeRobot {
 
 	//Spark elevator_motor = new Spark(2);
 	WPI_TalonSRX elevator_motor = new WPI_TalonSRX(1);
-	Elevator elevatorSystem = new Elevator(0.5, 0.75, elevator_motor, bottomLimitSwitch, topLimitSwitch);
+	Elevator elevatorSystem = new Elevator(0.75, 1.0, elevator_motor, bottomLimitSwitch, topLimitSwitch);
 	
-	VictorSP left_intake = new VictorSP(3);
-	VictorSP right_intake = new VictorSP(4);
+	VictorSP left_intake = new VictorSP(2);
+	VictorSP right_intake = new VictorSP(3);
+	
 	
 	
 	/**   b
@@ -43,12 +45,16 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void robotInit() {
-		//elevator_motor.configNominalOutputReverse(0.0, 0);
-		//elevator_motor.configNominalOutputForward(0.0, 0);
-		//elevator_motor.configPeakOutputReverse(-1.0, 0);
-		//elevator_motor.configPeakOutputForward(1.0, 0);
+		CameraServer.getInstance().startAutomaticCapture();
+
+		elevator_motor.configNominalOutputForward(0.0, 0);
+		elevator_motor.configNominalOutputForward(0.0, 0);
+		elevator_motor.configPeakOutputForward(+1.0, 0);
+		elevator_motor.configPeakOutputReverse(-1.0, 0);
 		
 		drive_gyro.calibrate();
+		
+		// Configure the distance to be in inches
         drive_encoder.setDistancePerPulse(Math.PI*6.0/250.0);
         
         //auto_selector.addDefault(center_gear.get_name(), center_gear);
@@ -64,7 +70,8 @@ public class Robot extends IterativeRobot {
 	boolean next_step = false;
 	int step_number = 0;
 	Timer auto_timer = new Timer();
-	Center_Peg_Auto center_gear = new Center_Peg_Auto("Center Gear", drive_system, auto_timer);
+	Test1FootAuto test1Foot = new Test1FootAuto("Test 1 Foor", drive_system, auto_timer);
+	TestTurn90Auto test90Turn = new TestTurn90Auto("Test Turn 90 Degrees", drive_system, auto_timer);
 	Left_Peg_Auto left_gear = new Left_Peg_Auto("Left Gear", drive_system, auto_timer);
 	Right_Peg_Auto right_gear = new Right_Peg_Auto("Right Gear", drive_system, auto_timer);
 	Auto_Mode nothing_auto = new Auto_Mode("Do Nothing", drive_system, auto_timer);
@@ -75,7 +82,8 @@ public class Robot extends IterativeRobot {
 	public void autonomousInit() {
 		elevator_motor.configPeakOutputForward(1.0, 0);
 		elevator_motor.configPeakOutputReverse(-1.0, 0);
-		center_gear.init_auto();
+		test1Foot.init_auto();
+		test90Turn.init_auto();
 		left_gear.init_auto();
 		right_gear.init_auto();
 		SmartDashboard.putBoolean("Finished", false);
@@ -90,13 +98,18 @@ public class Robot extends IterativeRobot {
 	public void autonomousPeriodic() {
 		SmartDashboard.putNumber("Encoder", drive_system.distanceEncoder.getDistance());
 		
-		SmartDashboard.putBoolean("Finished", selected_auto.periodic_auto());
-		//SmartDashboard.putBoolean("Finished", center_gear.periodic_auto());
+		// Test auto modes
+		//SmartDashboard.putBoolean("Finished", test1Foot.periodic_auto());
+		SmartDashboard.putBoolean("Finished", test90Turn.periodic_auto());
+		
 		//SmartDashboard.putBoolean("Finished", left_gear.periodic_auto());
 		//SmartDashboard.putBoolean("Finished", right_gear.periodic_auto());
+		
+		//SmartDashboard.putBoolean("Finished", selected_auto.periodic_auto());
 	}
 	
 	public void teleopInit() {
+		drive_system.distanceEncoder.reset();
 	}
 	
 	@Override
@@ -116,7 +129,7 @@ public class Robot extends IterativeRobot {
 			drive_system.setMaxSpeed(0.75);
 		}
 
-		drive_system.controlDrive(drive_stick.getRawAxis(1), drive_stick.getRawAxis(2)+0.2);
+		drive_system.controlDrive(drive_stick.getRawAxis(1), drive_stick.getRawAxis(2));
 		
 		SmartDashboard.putNumber("Climb power", gunner_stick.getRawAxis(1));
 		elevatorSystem.driveElevator(gunner_stick.getRawAxis(1)*-1);
@@ -125,7 +138,7 @@ public class Robot extends IterativeRobot {
 		//right_intake.set(intake_speed);
 		//left_intake.set(intake_speed);
 		
-		if (gunner_stick.getRawButton(2))
+		if (gunner_stick.getRawButton(1))
 		{
 			right_intake.set(0.5);
 			left_intake.set(0.5);
