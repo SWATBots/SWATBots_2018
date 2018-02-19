@@ -1,6 +1,7 @@
 package org.usfirst.frc.team5015.robot;
 
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.VictorSP;
 
 /**
  * 
@@ -9,12 +10,12 @@ import edu.wpi.first.wpilibj.Timer;
  */
 public class TestTurn90Auto extends Auto_Mode {
 
-	public TestTurn90Auto(String name, SWATDrive drive, Timer timer) {
-		super(name, drive, timer);
+	public TestTurn90Auto(String name, SWATDrive drive, VictorSP leftintake_input, VictorSP rightintake_input, Elevator elevatormotor_input, Timer timer) {
+		super(name, drive, leftintake_input, rightintake_input, elevatormotor_input, timer);
 	}
 	
 	@Override
-	public void init_auto(){
+	public void init_auto(String fieldLayout){
 		next_step = false;
 		step_number = 0;
 		auto_timer.reset();

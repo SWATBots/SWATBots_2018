@@ -1,5 +1,6 @@
 package org.usfirst.frc.team5015.robot;
 
+import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
@@ -44,7 +45,9 @@ public class Robot extends IterativeRobot {
 	 * used for any initialization code.
 	 */
 	@Override
-	public void robotInit() {
+	public void robotInit() {		
+		drive_system.setMaxSpeed(0.75);
+		
 		CameraServer.getInstance().startAutomaticCapture();
 
 		elevator_motor.configNominalOutputForward(0.0, 0);
@@ -64,31 +67,32 @@ public class Robot extends IterativeRobot {
         
     	//SmartDashboard.putData("Auto Selector", auto_selector);
         
-        right_intake.setInverted(true);
+        left_intake.setInverted(true);
+        
+        elevator_motor.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 10);
 	}
 
 	boolean next_step = false;
 	int step_number = 0;
 	Timer auto_timer = new Timer();
-	Test1FootAuto test1Foot = new Test1FootAuto("Test 1 Foor", drive_system, auto_timer);
-	TestTurn90Auto test90Turn = new TestTurn90Auto("Test Turn 90 Degrees", drive_system, auto_timer);
-	Left_Peg_Auto left_gear = new Left_Peg_Auto("Left Gear", drive_system, auto_timer);
-	Right_Peg_Auto right_gear = new Right_Peg_Auto("Right Gear", drive_system, auto_timer);
-	Auto_Mode nothing_auto = new Auto_Mode("Do Nothing", drive_system, auto_timer);
+	Test1FootAuto test1Foot = new Test1FootAuto("Test 1 Foot", drive_system, left_intake, right_intake, elevatorSystem, auto_timer);
+	TestTurn90Auto test90Turn = new TestTurn90Auto("Test Turn 90 Degrees",  drive_system, left_intake, right_intake, elevatorSystem, auto_timer);
+	Auto_Mode nothing_auto = new Auto_Mode("Do Nothing", drive_system, left_intake, right_intake, elevatorSystem, auto_timer);
 	Auto_Mode selected_auto;
-	
+	MiddleAuto middle_auto = new MiddleAuto("Middle Auto", drive_system, left_intake, right_intake, elevatorSystem, auto_timer);
 	
 	@Override
 	public void autonomousInit() {
+		String fieldConfig = DriverStation.getInstance().getGameSpecificMessage();
+		
 		elevator_motor.configPeakOutputForward(1.0, 0);
 		elevator_motor.configPeakOutputReverse(-1.0, 0);
-		test1Foot.init_auto();
-		test90Turn.init_auto();
-		left_gear.init_auto();
-		right_gear.init_auto();
+		test1Foot.init_auto(fieldConfig);
+		test90Turn.init_auto(fieldConfig);
+		middle_auto.init_auto(fieldConfig);
 		SmartDashboard.putBoolean("Finished", false);
 		//selected_auto = auto_selector.getSelected();
-		//selected_auto.init_auto();
+		//selected_auto.init_auto(fieldConfig);
 	}
 
 	/**
@@ -100,20 +104,23 @@ public class Robot extends IterativeRobot {
 		
 		// Test auto modes
 		//SmartDashboard.putBoolean("Finished", test1Foot.periodic_auto());
-		SmartDashboard.putBoolean("Finished", test90Turn.periodic_auto());
+		//SmartDashboard.putBoolean("Finished", test90Turn.periodic_auto());
 		
+		SmartDashboard.putBoolean("Finished", middle_auto.periodic_auto());
 		//SmartDashboard.putBoolean("Finished", left_gear.periodic_auto());
 		//SmartDashboard.putBoolean("Finished", right_gear.periodic_auto());
 		
 		//SmartDashboard.putBoolean("Finished", selected_auto.periodic_auto());
 	}
-	
+		
 	public void teleopInit() {
+		elevator_motor.setSelectedSensorPosition(0, 0, 10);
 		drive_system.distanceEncoder.reset();
 	}
 	
 	@Override
 	public void teleopPeriodic() {
+		SmartDashboard.putNumber("Elevator Encoder", elevator_motor.getSelectedSensorPosition(0));
 		SmartDashboard.putNumber("Encoder", drive_system.distanceEncoder.getDistance());
 		if(drive_stick.getRawButton(5))
 		{
