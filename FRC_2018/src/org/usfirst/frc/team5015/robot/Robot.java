@@ -136,7 +136,7 @@ public class Robot extends IterativeRobot {
 			drive_system.setMaxSpeed(0.75);
 		}
 
-		drive_system.controlDrive(drive_stick.getRawAxis(1), drive_stick.getRawAxis(2));
+		drive_system.controlDrive(drive_stick.getRawAxis(1), drive_stick.getRawAxis(2)+0.2);
 		
 		SmartDashboard.putNumber("Climb power", gunner_stick.getRawAxis(1));
 		elevatorSystem.driveElevator(gunner_stick.getRawAxis(1)*-1);
